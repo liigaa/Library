@@ -23,7 +23,6 @@ public class Library {
 
     public ArrayList<User> getUsers() {return dbBookRepository.getAllUser(); }
 
-
     public String addBook(){
         JTextField title = new JTextField(20);
         String[] availableGenre = {"Fantasy", "Romance", "Scientific", "Criminal", "Children's book"};
@@ -134,7 +133,8 @@ public class Library {
                     books.toArray(new Book[0]),
                     books);
 
-            if (dbBookRepository.getBorrowedBook(user1).contains(bookToBorrow)) {
+            if(bookToBorrow.getAvailableQuantity()!=0){
+            if (!dbBookRepository.getBorrowedBook(user1).contains(bookToBorrow)) {
                 if(dbBookRepository.getBorrowedBook(user1).size()>=5){
                     JOptionPane.showMessageDialog(null, "Already borrowed five books!", "Borrow book",
                             JOptionPane.WARNING_MESSAGE);
@@ -146,7 +146,8 @@ public class Library {
             } else {
                 JOptionPane.showMessageDialog(null, "Book " + bookToBorrow.getTitle() + " already borrowed. Please choose another book", "Borrow book",
                         JOptionPane.WARNING_MESSAGE);
-            }
+            }}else JOptionPane.showMessageDialog(null, "Book " + bookToBorrow.getTitle() + " not available. Please choose another book", "Borrow book",
+                    JOptionPane.WARNING_MESSAGE);
 
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "No book to borrow",
