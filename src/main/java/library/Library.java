@@ -6,6 +6,7 @@ import javax.swing.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class Library {
     DBBookRepository dbBookRepository = new DBBookRepository();
@@ -17,13 +18,10 @@ public class Library {
         this.books = new ArrayList<>();
         this.users = new ArrayList<>();
     }
-
     public ArrayList<Book> getBooks() {
         return dbBookRepository.getAll();
     }
-
     public ArrayList<User> getUsers() {return dbBookRepository.getAllUser(); }
-
     public String addBook(){
         JTextField title = new JTextField(20);
         String[] availableGenre = {"Fantasy", "Romance", "Scientific", "Criminal", "Children's book"};
@@ -108,11 +106,9 @@ public class Library {
         }
         return "Choose Book to delete";
     }
-    public boolean borrowedBook(User user,Book book) throws SQLException {
-            if (dbBookRepository.getBorrowedBook(user).contains(book)) {
-                return true;
-            }
-        return false;
+    public boolean borrowedBook(Book book,User user) throws SQLException {
+        ArrayList<Book> books = dbBookRepository.getBorrowedBook(user);
+        return !books.contains(book);
     }
     public String borrowing(){
         try {
@@ -133,22 +129,22 @@ public class Library {
                     books.toArray(new Book[0]),
                     books);
 
-            if(bookToBorrow.getAvailableQuantity()!=0){
-                if(dbBookRepository.getBorrowedBook(user1).size()<5){
-                    if (dbBookRepository.getBorrowedBook(user1).contains(bookToBorrow)) {
+            if (borrowedBook(bookToBorrow, user1)){
+                if(bookToBorrow.getAvailableQuantity()!=0){
+                 if(dbBookRepository.getBorrowedBook(user1).size()<5){
+
                     dbBookRepository.borrowBook(bookToBorrow, user1);
                     bookToBorrow.updateQuantityWhenBorrow(1);
                     dbBookRepository.updateQuantity(bookToBorrow);
                     return user1.getName() + " borrowed book: " + bookToBorrow.getTitle();
 
-                }else {
-                        JOptionPane.showMessageDialog(null, "Book " + bookToBorrow.getTitle() + " already borrowed. Please choose another book", "Borrow book",
-                                JOptionPane.WARNING_MESSAGE);
-
-            }}else {JOptionPane.showMessageDialog(null, "Already borrowed five books!", "Borrow book",
+                }else {JOptionPane.showMessageDialog(null, "Already borrowed five books!", "Borrow book",
                         JOptionPane.WARNING_MESSAGE);
 
-            }}else JOptionPane.showMessageDialog(null, "Book " + bookToBorrow.getTitle() + " not available. Please choose another book", "Borrow book",
+            }}else {JOptionPane.showMessageDialog(null, "Book " + bookToBorrow.getTitle() + " not available. Please choose another book", "Borrow book",
+                        JOptionPane.WARNING_MESSAGE);
+
+            }}else JOptionPane.showMessageDialog(null, "Book " + bookToBorrow.getTitle() + " already borrowed. Please choose another book", "Borrow book",
                     JOptionPane.WARNING_MESSAGE);
 
         } catch (Exception e) {
