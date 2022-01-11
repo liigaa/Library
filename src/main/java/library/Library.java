@@ -3,6 +3,7 @@ package library;
 import database.DBBookRepository;
 
 import javax.swing.*;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -107,12 +108,11 @@ public class Library {
         }
         return "Choose Book to delete";
     }
-    public String borrowBook(Book book, int borrowQuantity){
-        if(book.getAvailableQuantity() !=0){
-            if(borrowQuantity <= book.getAvailableQuantity()){
-                book.updateQuantityWhenBorrow(borrowQuantity);
+    public boolean borrowedBook(User user,Book book) throws SQLException {
+            if (dbBookRepository.getBorrowedBook(user).contains(book)) {
+                return true;
             }
-        }return "Book borrow";
+        return false;
     }
     public String borrowing(){
         try {
@@ -134,18 +134,20 @@ public class Library {
                     books);
 
             if(bookToBorrow.getAvailableQuantity()!=0){
-            if (!dbBookRepository.getBorrowedBook(user1).contains(bookToBorrow)) {
-                if(dbBookRepository.getBorrowedBook(user1).size()>=5){
-                    JOptionPane.showMessageDialog(null, "Already borrowed five books!", "Borrow book",
-                            JOptionPane.WARNING_MESSAGE);
-                }else {
+                if(dbBookRepository.getBorrowedBook(user1).size()<5){
+                    if (dbBookRepository.getBorrowedBook(user1).contains(bookToBorrow)) {
                     dbBookRepository.borrowBook(bookToBorrow, user1);
                     bookToBorrow.updateQuantityWhenBorrow(1);
                     dbBookRepository.updateQuantity(bookToBorrow);
-                    return user1.getName() + " borrowed book: " + bookToBorrow.getTitle();}
-            } else {
-                JOptionPane.showMessageDialog(null, "Book " + bookToBorrow.getTitle() + " already borrowed. Please choose another book", "Borrow book",
+                    return user1.getName() + " borrowed book: " + bookToBorrow.getTitle();
+
+                }else {
+                        JOptionPane.showMessageDialog(null, "Book " + bookToBorrow.getTitle() + " already borrowed. Please choose another book", "Borrow book",
+                                JOptionPane.WARNING_MESSAGE);
+
+            }}else {JOptionPane.showMessageDialog(null, "Already borrowed five books!", "Borrow book",
                         JOptionPane.WARNING_MESSAGE);
+
             }}else JOptionPane.showMessageDialog(null, "Book " + bookToBorrow.getTitle() + " not available. Please choose another book", "Borrow book",
                     JOptionPane.WARNING_MESSAGE);
 
@@ -159,8 +161,8 @@ public class Library {
         try {
             ArrayList<User> users = this.getUsers();
             User user1 = (User) JOptionPane.showInputDialog(null,
-                    "Choose User which borrow",
-                    "Borrow Book",
+                    "Choose User which returning",
+                    "Return Book",
                     JOptionPane.INFORMATION_MESSAGE,
                     null,
                     users.toArray(new User[0]),
@@ -168,8 +170,8 @@ public class Library {
 
             ArrayList<Book> books = dbBookRepository.getBorrowedBook(user1);
             Book bookToBorrow = (Book) JOptionPane.showInputDialog(null,
-                    "Choose Book to borrow",
-                    "Borrow Book",
+                    "Choose Book to return",
+                    "Return Book",
                     JOptionPane.INFORMATION_MESSAGE,
                     null,
                     books.toArray(new Book[0]),
@@ -184,23 +186,19 @@ public class Library {
         }
         return "Start again!";
     }
-    public String borrowedByUser(){
-        try{
+    public String borrowedByUser() throws SQLException {
             ArrayList<User> users = this.getUsers();
             User user1 = (User) JOptionPane.showInputDialog(null,
                     "Choose User",
-                    "Borrow Book",
+                    "Borrowed Books",
                     JOptionPane.INFORMATION_MESSAGE,
                     null,
                     users.toArray(new User[0]),
                     users);
             List<String> bookStrings = dbBookRepository.getBorrowedBook(user1).stream().map(Book::toString).toList();
            JOptionPane.showMessageDialog(null, String.join(",\n", bookStrings), "All borrowed book by: " + user1.getName(), JOptionPane.PLAIN_MESSAGE);
-           return "Exit";
-        }catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "No borrowed books",
-                    "Warning!", JOptionPane.WARNING_MESSAGE);
-        }return "Start again!";
+
+        return "Return to menu!";
     }
     public String updateBook(){
         try {
@@ -229,13 +227,13 @@ public class Library {
             }
             if (result == JOptionPane.OK_OPTION) {
                 int quantity = Integer.parseInt(JOptionPane.showInputDialog(null,
-                        "There are " + bookToUpdate.getTitle()+ " " + bookToUpdate.getAvailableQuantity() + " books. Please enter new quantity. ",
+                        "There are " + bookToUpdate.getTitle()+ " " + bookToUpdate.getAvailableQuantity() + " books. Please enter amount to add. ",
                         "Update book", JOptionPane.QUESTION_MESSAGE));
                 String newTitle = titleField.getText();
                 String newGenre = (String) genreField.getSelectedItem();
                 bookToUpdate.setTitle(newTitle);
                 bookToUpdate.setGenre(newGenre);
-                bookToUpdate.setAvailableQuantity(quantity);
+                bookToUpdate.updateQuantityWhenReturn(quantity);
                 dbBookRepository.updateBook(bookToUpdate);
                 //dbBookRepository.updateBorrowedBook(bookToUpdate);
             }

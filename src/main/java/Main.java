@@ -2,17 +2,18 @@ import library.Book;
 import library.Library;
 
 import javax.swing.*;
+import java.sql.SQLException;
 import java.util.List;
 
 public class Main {
     Library myLibrary = new Library();
     ImageIcon icon = new ImageIcon("src/library.jpg");
-    public static void main(String[] args) {
+    public static void main(String[] args) throws SQLException {
         Main main = new Main();
         main.menu();
     }
 
-    void menu() {
+    void menu() throws SQLException {
         String libraryOption;
 
         do {
