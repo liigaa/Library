@@ -108,7 +108,11 @@ public class Library {
     }
     public boolean borrowedBook(Book book,User user) throws SQLException {
         ArrayList<Book> books = dbBookRepository.getBorrowedBook(user);
-        return !books.contains(book);
+        for(Book book1: books)
+            if(book1.getId() == book.getId()){
+                return false;
+            }
+        return true;
     }
     public String borrowing(){
         try {
